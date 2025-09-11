@@ -15,40 +15,40 @@ st.write("Enter your stats. Enter theirs. Find out who's actually rare—and who
 
 st.header("Your Stats")
 st.write("Hide sensitive fields if sharing publicly (they'll still count in calculations).")
-gender_you = st.selectbox("Your Gender", ["Male", "Female"], index=0)
-height_you = st.number_input("Your Height (inches)", min_value=60, max_value=84, value=76)  # 6'4"
-race_you = st.selectbox("Your Race/Ethnicity", ["Mexican", "Filipina", "White", "Black", "Other"], index=0)
-age_you = st.number_input("Your Age", min_value=18, max_value=100, value=35)
-income_you = st.number_input("Your Annual Income ($)", min_value=0, value=130000)
-marital_you = st.selectbox("Your Marital Status", ["Single", "Married"], index=0)
-obesity_you = st.selectbox("Your Obesity Status", ["Non-obese", "Obese"], index=0)
-homeownership_you = st.selectbox("Your Homeownership", ["Homeowner", "Renter"], index=0)
+gender_you = st.selectbox("Your Gender", ["Male", "Female"])
+height_you = st.number_input("Your Height (inches)", min_value=60, max_value=84)
+race_you = st.selectbox("Your Race/Ethnicity", ["Mexican", "Filipina", "White", "Black", "Other"])
+age_you = st.number_input("Your Age", min_value=18, max_value=100)
+income_you = st.number_input("Your Annual Income ($)", min_value=0)
+marital_you = st.selectbox("Your Marital Status", ["Single", "Married"])
+obesity_you = st.selectbox("Your Obesity Status", ["Non-obese", "Obese"])
+homeownership_you = st.selectbox("Your Homeownership", ["Homeowner", "Renter"])
 search_zone_you = st.selectbox("Where are you searching?", 
-    ["U.S.", "Philippines", "Thailand", "Colombia", "Vietnam", "Russia", "Ukraine", "Brazil", "Mexico", "China", "Indonesia"], index=0)
+    ["U.S.", "Philippines", "Thailand", "Colombia", "Vietnam", "Russia", "Ukraine", "Brazil", "Mexico", "China", "Indonesia"])
 if gender_you == "Male":
-    fishing_rod_you = st.slider("Your Rod Count (1-10)", 1, 10, 10)  # 10 maps to 8"
+    fishing_rod_you = st.slider("Your Rod Count (1-10)", 1, 10)
 else:
-    cup_size_you = st.selectbox("Your Cup Count: How many?", ["1 Cup (A)", "2 Cups (B)", "3+ Cups (C or larger)"], index=0)
+    cup_size_you = st.selectbox("Your Cup Count: How many?", ["1 Cup (A)", "2 Cups (B)", "3+ Cups (C or larger)"])
 hide_income_you = st.checkbox("Hide Your Income", value=False)
 hide_size_you = st.checkbox("Hide Your Rod/Cup Count", value=True)
 hide_age_you = st.checkbox("Hide Your Age", value=False)
 
 st.header("Your Ex's Stats")
 st.write("Hide their sensitive fields if sharing publicly (they'll still count in calculations).")
-gender_ronabel = st.selectbox("Their Gender", ["Male", "Female"], index=1)
-height_ronabel = st.number_input("Their Height (inches)", min_value=60, max_value=84, value=64)  # 5'4"
-race_ronabel = st.selectbox("Their Race/Ethnicity", ["Mexican", "Filipina", "White", "Black", "Other"], index=1)
-age_ronabel = st.number_input("Their Age", min_value=18, max_value=100, value=35)
-income_ronabel = st.number_input("Their Annual Income ($)", min_value=0, value=34000)
-marital_ronabel = st.selectbox("Their Marital Status", ["Single", "Married"], index=0)
-obesity_ronabel = st.selectbox("Their Obesity Status", ["Non-obese", "Obese"], index=0)
-homeownership_ronabel = st.selectbox("Their Homeownership", ["Homeowner", "Renter"], index=1)
+gender_ronabel = st.selectbox("Their Gender", ["Male", "Female"])
+height_ronabel = st.number_input("Their Height (inches)", min_value=60, max_value=84)
+race_ronabel = st.selectbox("Their Race/Ethnicity", ["Mexican", "Filipina", "White", "Black", "Other"])
+age_ronabel = st.number_input("Their Age", min_value=18, max_value=100)
+income_ronabel = st.number_input("Their Annual Income ($)", min_value=0)
+marital_ronabel = st.selectbox("Their Marital Status", ["Single", "Married"])
+obesity_ronabel = st.selectbox("Their Obesity Status", ["Non-obese", "Obese"])
+homeownership_ronabel = st.selectbox("Their Homeownership", ["Homeowner", "Renter"])
 search_zone_ronabel = st.selectbox("Where are they searching?", 
-    ["U.S.", "Philippines", "Thailand", "Colombia", "Vietnam", "Russia", "Ukraine", "Brazil", "Mexico", "China", "Indonesia"], index=0)
+    ["U.S.", "Philippines", "Thailand", "Colombia", "Vietnam", "Russia", "Ukraine", "Brazil", "Mexico", "China", "Indonesia"])
 if gender_ronabel == "Male":
-    fishing_rod_ronabel = st.slider("Their Rod Count (1-10)", 1, 10, 5)  # Default average
+    fishing_rod_ronabel = st.slider("Their Rod Count (1-10)", 1, 10)
 else:
-    cup_size_ronabel = st.selectbox("Their Cup Count: How many?", ["1 Cup (A)", "2 Cups (B)", "3+ Cups (C or larger)"], index=0)
+    cup_size_ronabel = st.selectbox("Their Cup Count: How many?", ["1 Cup (A)", "2 Cups (B)", "3+ Cups (C or larger)"])
 hide_income_ronabel = st.checkbox("Hide Their Income", value=True)
 hide_size_ronabel = st.checkbox("Hide Their Rod/Cup Count", value=True)
 hide_age_ronabel = st.checkbox("Hide Their Age", value=False)
