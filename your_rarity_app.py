@@ -1,32 +1,31 @@
+python
 import streamlit as st
 import math
 import time
 
 # Simple rarity calculation
-def calculate_rarity(age, gender, height, weight, race, cups, rods, ex_rarity=False):
+def calculate_rarity(age, gender, height, weight, race, cups, rod_length, ex_rarity=False):
     prob = 1.0
     prob *= (1 / 101)  # Age
     if gender == 'male' or gender == 'female':
         prob *= 0.5
     elif gender:
         prob *= 0.01
-    prob *= (1 / 100)  # Height
+    prob *= (1 / 100)  # Height in inches
     prob *= (1 / 500)  # Weight
     race_probs = {'caucasian': 0.6, 'african-american': 0.13, 'hispanic': 0.19, 'asian': 0.06, 'other': 0.02}
     prob *= race_probs.get(race, 0.02)
     
     # Cups as bra size for females only
     if gender == 'female':
-        cup_probs = {'a': 0.3, 'b': 0.25, 'c': 0.25, 'd': 0.15, 'dd': 0.05}  # A=1, B=2, etc. mapped to sizes
-        cup_value = int(cups) if cups.isdigit() else 0
-        cup_key = ['a', 'b', 'c', 'd', 'dd'][min(cup_value - 1, 4)] if 1 <= cup_value <= 5 else 'a'
-        prob *= cup_probs.get(cup_key, 0.3)
+        cup_probs = {'1': 0.3, '2': 0.25, '3': 0.25, '4': 0.15, '5': 0.05}  # 1=A, 2=B, etc.
+        prob *= cup_probs.get(cups, 0.3)
     else:
         prob *= 1.0  # No cup factor for males
     
-    rod_probs = {'1': 0.5, '2': 0.3, '3': 0.1, '4': 0.05, '5': 0.05}  # Rods as count 1-5
-    rod_value = int(rods) if rods.isdigit() else 0
-    prob *= rod_probs.get(str(rod_value), 0.5)
+    # Fishing Rod Length: 1-10 (implied inches, tactful)
+    rod_probs = {'1': 0.2, '2': 0.15, '3': 0.12, '4': 0.1, '5': 0.08, '6': 0.07, '7': 0.06, '8': 0.05, '9': 0.04, '10': 0.03}
+    prob *= rod_probs.get(rod_length, 0.2)
     
     rarity = 1 / prob
     return max(1000, min(10000000, rarity))
@@ -48,12 +47,12 @@ race = st.selectbox("Race/Ethnicity", ["", "Caucasian", "African American", "His
 
 # Cups: Only show for females
 if gender == "Female":
-    cups = st.selectbox("Cups (Bra Size: 1=A, 2=B, 3=C, 4=D, 5+=DD+)", ["", "1", "2", "3", "4", "5"])
+    cups = st.selectbox("Cups (Bra Size: 1=A, 2=B, 3=C, 4=D, 5=DD+)", ["", "1", "2", "3", "4", "5"])
 else:
     cups = ""
 
-# Rods: Simple count 1-5 for humor
-rods = st.selectbox("Rods (Count: 1-5)", ["", "1", "2", "3", "4", "5"])
+# Fishing Rod Length: Tactful 1-10 scale
+rod_length = st.selectbox("Fishing Rod Length (1-10)", ["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
 
 # Compare to Ex (Optional)
 ex_name = st.text_input("Ex's Name", placeholder="Enter ex's name")
@@ -71,17 +70,17 @@ if ex_name:
     
     # Ex cups only for female
     if ex_data['gender'] == "Female":
-        ex_data['cups'] = st.selectbox("Ex's Cups (1=A, 2=B, 3=C, 4=D, 5+=DD+)", ["", "1", "2", "3", "4", "5"])
+        ex_data['cups'] = st.selectbox("Ex's Cups (1=A, 2=B, 3=C, 4=D, 5=DD+)", ["", "1", "2", "3", "4", "5"])
     else:
         ex_data['cups'] = ""
     
-    ex_data['rods'] = st.selectbox("Ex's Rods (1-5)", ["", "1", "2", "3", "4", "5"])
+    ex_data['rod_length'] = st.selectbox("Ex's Fishing Rod Length (1-10)", ["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
 else:
     ex_data = {}
 
 if st.button("Calculate Rarity"):
     # Validation
-    filled = [name, str(age), gender, str(height), str(weight), race, cups, rods]
+    filled = [name, str(age), gender, str(height), str(weight), race, cups, rod_length]
     if sum(1 for f in filled if f and f != '0' and f != '') < 2:
         st.error("Please fill in your name and at least one stat!")
     else:
@@ -96,7 +95,7 @@ if st.button("Calculate Rarity"):
         
         # Calculate user rarity
         user_race = race.lower().replace(' ', '-')
-        rarity = calculate_rarity(age, gender.lower(), height, weight, user_race, cups, rods)
+        rarity = calculate_rarity(age, gender.lower(), height, weight, user_race, cups, rod_length)
         percent = (1 / rarity * 100)
         
         st.header(f"{name or 'Your'} Rarity Results")
@@ -105,7 +104,7 @@ if st.button("Calculate Rarity"):
         # Ex comparison
         if ex_name:
             ex_race = ex_data['race'].lower().replace(' ', '-')
-            ex_rarity = calculate_rarity(ex_data['age'], ex_data['gender'].lower(), ex_data['height'], ex_data['weight'], ex_race, ex_data['cups'], ex_data['rods'])
+            ex_rarity = calculate_rarity(ex_data['age'], ex_data['gender'].lower(), ex_data['height'], ex_data['weight'], ex_race, ex_data['cups'], ex_data['rod_length'])
             ex_percent = (1 / ex_rarity * 100)
             if rarity > ex_rarity:
                 st.info(f"Compared to {ex_name}, you're **rarer** (they are {ex_percent:.4f}%)!")
@@ -122,7 +121,6 @@ if st.button("Calculate Rarity"):
                 st.success("Copied to clipboard! (Manual copy from code block)")
         with col_share:
             if st.button("Share Image"):
-                # Simple markdown "image" (for real image, add matplotlib later)
                 st.markdown(f"""
                 ---
                 # Your Rarity Score!
@@ -134,8 +132,10 @@ if st.button("Calculate Rarity"):
                 st.success("Share this markdown as an image or text!")
         
         if st.button("Reset Form"):
+            st.session_state.clear()
             st.rerun()
 
 # Reset button always visible
 if st.button("Reset Form"):
+    st.session_state.clear()
     st.rerun()
