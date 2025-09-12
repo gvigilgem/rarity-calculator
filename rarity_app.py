@@ -125,7 +125,6 @@
         <label for="weight">Weight (lbs):</label>
         <input type="number" id="weight" min="0" max="500" value="0">
         
-        <!-- Add more fields as needed, e.g., race, ethnicity, etc. – all default to 0 or blank -->
         <label for="race">Race/Ethnicity:</label>
         <select id="race">
             <option value="">Select</option>
