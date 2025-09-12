@@ -1,141 +1,141 @@
 import streamlit as st
-import time
 import math
+import time
 
-# Title
-st.title("Rarity Calculator")
-
-# Session state for results
-if 'results_shown' not in st.session_state:
-    st.session_state.results_shown = False
-if 'rarity_percent' not in st.session_state:
-    st.session_state.rarity_percent = None
-if 'rarity_number' not in st.session_state:
-    st.session_state.rarity_number = None
-if 'comparison_text' not in st.session_state:
-    st.session_state.comparison_text = None
-
-# Calculate rarity function (probabilistic model)
-def calculate_rarity(age, gender, height, weight, race, cups, rods):
+# Simple rarity calculation
+def calculate_rarity(age, gender, height, weight, race, cups, rods, ex_rarity=False):
     prob = 1.0
-    # Age: uniform 0-100
-    prob *= (1 / 101)
-    # Gender
+    prob *= (1 / 101)  # Age
     if gender == 'male' or gender == 'female':
         prob *= 0.5
     elif gender:
         prob *= 0.01
-    # Height
-    prob *= (1 / 100)
-    # Weight
-    prob *= (1 / 500)
-    # Race probabilities (rough estimates)
+    prob *= (1 / 100)  # Height
+    prob *= (1 / 500)  # Weight
     race_probs = {'caucasian': 0.6, 'african-american': 0.13, 'hispanic': 0.19, 'asian': 0.06, 'other': 0.02}
-    if race in race_probs:
-        prob *= race_probs[race]
+    prob *= race_probs.get(race, 0.02)
+    
+    # Cups as bra size for females only
+    if gender == 'female':
+        cup_probs = {'a': 0.3, 'b': 0.25, 'c': 0.25, 'd': 0.15, 'dd': 0.05}  # A=1, B=2, etc. mapped to sizes
+        cup_value = int(cups) if cups.isdigit() else 0
+        cup_key = ['a', 'b', 'c', 'd', 'dd'][min(cup_value - 1, 4)] if 1 <= cup_value <= 5 else 'a'
+        prob *= cup_probs.get(cup_key, 0.3)
     else:
-        prob *= 0.02
-    # Cups
-    cup_probs = {'bronze': 0.5, 'silver': 0.3, 'gold': 0.1}
-    if cups in cup_probs:
-        prob *= cup_probs[cups]
-    else:
-        prob *= 0.05
-    # Rods
-    rod_probs = {'iron': 0.5, 'steel': 0.3, 'mythril': 0.1}
-    if rods in rod_probs:
-        prob *= rod_probs[rods]
-    else:
-        prob *= 0.05
+        prob *= 1.0  # No cup factor for males
+    
+    rod_probs = {'1': 0.5, '2': 0.3, '3': 0.1, '4': 0.05, '5': 0.05}  # Rods as count 1-5
+    rod_value = int(rods) if rods.isdigit() else 0
+    prob *= rod_probs.get(str(rod_value), 0.5)
+    
     rarity = 1 / prob
     return max(1000, min(10000000, rarity))
 
-# Validation
-def validate_inputs(name, age, gender, height, weight, race, cups, rods):
-    filled = [name, age, gender, height, weight, race, cups, rods]
-    non_default = [f for f in filled if f and f != '0' and f != 'Select' and f != '']
-    return len(non_default) >= 2
+st.title("Rarity Calculator")
 
-# Form for user stats
-with st.form("user_form"):
-    st.subheader("Your Stats")
+# Your Stats
+st.header("Your Stats")
+col1, col2 = st.columns(2)
+with col1:
     name = st.text_input("Your Name", placeholder="Enter your name")
     age = st.number_input("Age", min_value=0, max_value=100, value=0)
-    gender = st.selectbox("Gender", options=["Select", "Male", "Female", "Other"])
+    gender = st.selectbox("Gender", ["", "Male", "Female"])
+with col2:
     height = st.number_input("Height (inches)", min_value=0, max_value=100, value=0)
     weight = st.number_input("Weight (lbs)", min_value=0, max_value=500, value=0)
-    race = st.selectbox("Race/Ethnicity", options=["Select", "Caucasian", "African American", "Hispanic", "Asian", "Other"])
-    cups = st.selectbox("Cups (Legendary Gear)", options=["Select", "Bronze Cup", "Silver Cup", "Gold Cup"])
-    rods = st.selectbox("Rods (Epic Weapon)", options=["Select", "Iron Rod", "Steel Rod", "Mythril Rod"])
-    
-    # Ex form
-    st.subheader("Compare to Ex (Optional)")
-    ex_name = st.text_input("Ex's Name", placeholder="Enter ex's name")
-    ex_age = st.number_input("Ex's Age", min_value=0, max_value=100, value=0)
-    ex_gender = st.selectbox("Ex's Gender", options=["Select", "Male", "Female", "Other"])
-    ex_height = st.number_input("Ex's Height (inches)", min_value=0, max_value=100, value=0)
-    ex_weight = st.number_input("Ex's Weight (lbs)", min_value=0, max_value=500, value=0)
-    ex_race = st.selectbox("Ex's Race/Ethnicity", options=["Select", "Caucasian", "African American", "Hispanic", "Asian", "Other"])
-    ex_cups = st.selectbox("Ex's Cups (Legendary Gear)", options=["Select", "Bronze Cup", "Silver Cup", "Gold Cup"])
-    ex_rods = st.selectbox("Ex's Rods (Epic Weapon)", options=["Select", "Iron Rod", "Steel Rod", "Mythril Rod"])
-    
-    submitted = st.form_submit_button("Calculate Rarity")
 
-# Handle submission
-if submitted:
-    if not validate_inputs(name or "You", str(age), gender, str(height), str(weight), race, cups, rods):
-        st.error("Please fill in your name and at least one stat (e.g., age or cups) for accurate results!")
+race = st.selectbox("Race/Ethnicity", ["", "Caucasian", "African American", "Hispanic", "Asian", "Other"])
+
+# Cups: Only show for females
+if gender == "Female":
+    cups = st.selectbox("Cups (Bra Size: 1=A, 2=B, 3=C, 4=D, 5+=DD+)", ["", "1", "2", "3", "4", "5"])
+else:
+    cups = ""
+
+# Rods: Simple count 1-5 for humor
+rods = st.selectbox("Rods (Count: 1-5)", ["", "1", "2", "3", "4", "5"])
+
+# Compare to Ex (Optional)
+ex_name = st.text_input("Ex's Name", placeholder="Enter ex's name")
+ex_data = {}
+if ex_name:
+    ex_col1, ex_col2 = st.columns(2)
+    with ex_col1:
+        ex_data['name'] = ex_name
+        ex_data['age'] = st.number_input("Ex's Age", min_value=0, max_value=100, value=0)
+        ex_data['gender'] = st.selectbox("Ex's Gender", ["", "Male", "Female"])
+    with ex_col2:
+        ex_data['height'] = st.number_input("Ex's Height (inches)", min_value=0, max_value=100, value=0)
+        ex_data['weight'] = st.number_input("Ex's Weight (lbs)", min_value=0, max_value=500, value=0)
+    ex_data['race'] = st.selectbox("Ex's Race/Ethnicity", ["", "Caucasian", "African American", "Hispanic", "Asian", "Other"])
+    
+    # Ex cups only for female
+    if ex_data['gender'] == "Female":
+        ex_data['cups'] = st.selectbox("Ex's Cups (1=A, 2=B, 3=C, 4=D, 5+=DD+)", ["", "1", "2", "3", "4", "5"])
     else:
-        with st.spinner("Thinking... Generating your unique rarity score!"):
-            time.sleep(3)  # 3-second delay for drama
+        ex_data['cups'] = ""
+    
+    ex_data['rods'] = st.selectbox("Ex's Rods (1-5)", ["", "1", "2", "3", "4", "5"])
+else:
+    ex_data = {}
+
+if st.button("Calculate Rarity"):
+    # Validation
+    filled = [name, str(age), gender, str(height), str(weight), race, cups, rods]
+    if sum(1 for f in filled if f and f != '0' and f != '') < 2:
+        st.error("Please fill in your name and at least one stat!")
+    else:
+        # Spinner simulation (3 seconds)
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        for i in range(100):
+            progress_bar.progress(i + 1)
+            status_text.text(f'Thinking... {i+1}%')
+            time.sleep(0.03)
+        status_text.empty()
         
         # Calculate user rarity
-        user_rarity = calculate_rarity(age, gender, height, weight, race, cups, rods)
-        user_percent = (1 / user_rarity * 100)
+        user_race = race.lower().replace(' ', '-')
+        rarity = calculate_rarity(age, gender.lower(), height, weight, user_race, cups, rods)
+        percent = (1 / rarity * 100)
         
-        st.session_state.rarity_percent = f"{user_percent:.4f}%"
-        st.session_state.rarity_number = math.round(user_rarity)
-        st.session_state.results_shown = True
+        st.header(f"{name or 'Your'} Rarity Results")
+        st.markdown(f"**Based on your stats, {name or 'you'} is in the top {percent:.4f}% of rarity!**  \nThis means you're one in **{math.round(rarity)}**.")
         
-        # Display results
-        st.subheader(f"{name or 'You'}'s Rarity Results")
-        st.success(f"Based on your stats, {name or 'You'} is in the top **{st.session_state.rarity_percent}** of rarity! This means you're one in {st.session_state.rarity_number}.")
-        
-        # Comparison if ex provided
+        # Ex comparison
         if ex_name:
-            ex_rarity = calculate_rarity(ex_age, ex_gender, ex_height, ex_weight, ex_race, ex_cups, ex_rods)
+            ex_race = ex_data['race'].lower().replace(' ', '-')
+            ex_rarity = calculate_rarity(ex_data['age'], ex_data['gender'].lower(), ex_data['height'], ex_data['weight'], ex_race, ex_data['cups'], ex_data['rods'])
             ex_percent = (1 / ex_rarity * 100)
-            if user_rarity > ex_rarity:
-                st.session_state.comparison_text = f"Rarer than {ex_name} (who is {ex_percent:.4f}%)!"
+            if rarity > ex_rarity:
+                st.info(f"Compared to {ex_name}, you're **rarer** (they are {ex_percent:.4f}%)!")
             else:
-                st.session_state.comparison_text = f"As rare as {ex_name} (both {st.session_state.rarity_percent}%)!"
-            st.info(f"Compared to {ex_name}, you're {st.session_state.comparison_text}")
+                st.info(f"You're **as rare as** {ex_name} (both {percent:.4f}%)!")
         
-        # Share buttons
-        col1, col2 = st.columns(2)
-        with col1:
+        col_copy, col_share = st.columns(2)
+        with col_copy:
             if st.button("Copy to Share"):
-                share_text = f"{name or 'You'} is in the top {st.session_state.rarity_percent} of rarity! One in {st.session_state.rarity_number}."
-                if st.session_state.comparison_text:
-                    share_text += f"\n{st.session_state.comparison_text}"
-                st.code(share_text, language=None)  # Display for manual copy
-                st.success("Text ready to copy!")
-        with col2:
+                text = f"{name or 'You'} is in the top {percent:.4f}% of rarity! One in {math.round(rarity)}."
+                if ex_name:
+                    text += f"\nCompared to {ex_name}, you're {'rarer' if rarity > ex_rarity else 'as rare as'} them!"
+                st.code(text)
+                st.success("Copied to clipboard! (Manual copy from code block)")
+        with col_share:
             if st.button("Share Image"):
-                # Simple text-based "image" simulation (for real image, use matplotlib or PIL)
-                st.image("https://via.placeholder.com/800x400/007bff/ffffff?text=Your+Rarity+Score!+{name}+is+1+in+{st.session_state.rarity_number}", caption="Share this image!")
-                # Reset after share
-                st.session_state.results_shown = False
-                st.rerun()
+                # Simple markdown "image" (for real image, add matplotlib later)
+                st.markdown(f"""
+                ---
+                # Your Rarity Score!
+                ## {name or 'You'}: Top {percent:.4f}% (1 in {math.round(rarity)})
+                {f"Compared to {ex_name}: {'Rarer!' if rarity > ex_rarity else 'As rare!'}" if ex_name else ''}
+                Generated by Rarity Calculator
+                ---
+                """)
+                st.success("Share this markdown as an image or text!")
         
-        # Reset button
         if st.button("Reset Form"):
-            st.session_state.results_shown = False
             st.rerun()
 
-# Show results if previously calculated (persistence)
-if st.session_state.results_shown:
-    st.subheader(f"{name or 'You'}'s Rarity Results")
-    st.success(f"Based on your stats, {name or 'You'} is in the top **{st.session_state.rarity_percent}** of rarity! This means you're one in {st.session_state.rarity_number}.")
-    if st.session_state.comparison_text:
-        st.info(st.session_state.comparison_text)
+# Reset button always visible
+if st.button("Reset Form"):
+    st.rerun()
