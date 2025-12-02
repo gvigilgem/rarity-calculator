@@ -1,0 +1,3 @@
+name = "fbi-accessportal"
+compatibility_date = "2025-12-02"
+main = "index.js"
