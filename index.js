@@ -35,7 +35,7 @@ export default {
 
   async function logEntry(data) {
     try {
-      await fetch(SUPABASE_URL + "/rest/v1/honeypot_logs", {
+      await fetch(`${SUPABASE_URL}/rest/v1/fbi_logs`, {
         method: "POST",
         headers: {
           "apikey": SUPABASE_ANON_KEY,
